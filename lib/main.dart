@@ -1,8 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:roomie/authentication/authentication_service.dart';
+import 'package:roomie/authentication/authentication_cubit.dart';
+import 'package:roomie/authentication/authentication_state.dart';
+import 'package:roomie/screens/hompageScreen.dart';
+import 'package:roomie/screens/signUpScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,84 +18,48 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        Provider<AuthenticationService>(create: (_) => AuthenticationService(FirebaseAuth.instance)),
-        StreamProvider(create: (context) => context.read<AuthenticationService>().authStateChanges)
-      ],
-      child: MaterialApp(
+    return MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: AuthenticationWrapper(),
-      ),
-    );
+        home: MyHomePage(),
+      );
   }
 }
+class  MyHomePage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => new _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(providers: [
+      BlocProvider(create: (_) => AuthenticationCubit(firebaseAuth: FirebaseAuth.instance)),
+    ],
+    child: AuthenticationWrapper() ,);
+  }
+}
+
 
 class AuthenticationWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final firebaseUser = context.watch<User>();
-
-    if (firebaseUser != null) {
-      return Homepage();
-    } else {
-      return SignIn();
-    }
-  }
-}
-
-class SignIn extends StatelessWidget {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: "Password"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                context
-                    .read<AuthenticationService>()
-                    .signIn(email: emailController.text.trim(), password: passwordController.text.trim());
-              },
-              child: Text("Sign In"),
-            )
-          ],
-        ),
-      ),
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      cubit: BlocProvider.of<AuthenticationCubit>(context),
+      builder: (context, state) {
+        if (state is AuthenticationAuthenticatedState) {
+          return HomepageScreen(
+            authenticatedState: state,
+          );
+        }
+        return SignInScreen();
+      },
     );
   }
 }
 
-class Homepage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: Column(
-          children: [
-            Text("Welcome"),
-            ElevatedButton(onPressed: () {
-              context.read<AuthenticationService>().signOut();
-            }, child: Text("SignOut"))
-          ],
-        ),
-      ),
-    );
-  }
-}
+
+
+
