@@ -1,4 +1,4 @@
-# roomie
+# Roomie
 
 A new Flutter project.
 
