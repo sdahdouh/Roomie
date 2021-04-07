@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:roomie/authentication/authentication_cubit.dart';
 import 'package:roomie/authentication/authentication_state.dart';
-import 'package:roomie/screens/hompageScreen.dart';
-import 'package:roomie/screens/signUpScreen.dart';
+import 'package:roomie/screens/hompage_screen.dart';
+import 'package:roomie/screens/sign_in_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
